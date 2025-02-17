@@ -191,6 +191,127 @@ local function orbitWave()
 	end)
 	disableColl() curMode="w"
 end
+		local function orbitSpiral2()
+	if not ot or not ot.Character then return end
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	if not hr then return end
+	respActive = true
+	coroutine.wrap(respLoop)()
+	oc = rs.Heartbeat:Connect(function()
+		local base = tick() * sp
+		local ping = getPing()
+		local pred = enhancedPredPos(hr, ping)
+		local tight = 0.3
+		for i, h in ipairs(acc) do
+			local ang = base + (i * (2 * math.pi / #acc))
+			local rad = r + (i * tight)
+			local off = Vector3.new(math.cos(ang) * rad, math.sin(base + i) * 2, math.sin(ang) * rad)
+			local offWorld = computeOffset(hr, off)
+			h.CFrame = CFrame.new(pred + offWorld, pred)
+		end
+	end)
+	disableColl()
+	curMode = "sp2"
+end
+
+local function orbitCube()
+	if not ot or not ot.Character then return end
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	if not hr then return end
+	respActive = true
+	coroutine.wrap(respLoop)()
+	oc = rs.Heartbeat:Connect(function()
+		local base = tick() * sp
+		local ping = getPing()
+		local pred = enhancedPredPos(hr, ping)
+		local n = #acc
+		local side = 5
+		for i, h in ipairs(acc) do
+			local ang = base + (i * (2 * math.pi / n))
+			local x = (i % 2 == 0) and side or -side
+			local y = (i % 3 == 0) and side or -side
+			local off = Vector3.new(x, y, math.sin(ang) * r)
+			local offWorld = computeOffset(hr, off)
+			h.CFrame = CFrame.new(pred + offWorld, pred)
+		end
+	end)
+	disableColl()
+	curMode = "cube"
+end
+
+local function orbitBox()
+	if not ot or not ot.Character then return end
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	if not hr then return end
+	respActive = true
+	coroutine.wrap(respLoop)()
+	oc = rs.Heartbeat:Connect(function()
+		local base = tick() * sp
+		local ping = getPing()
+		local pred = enhancedPredPos(hr, ping)
+		local n = #acc
+		for i, h in ipairs(acc) do
+			local ang = base + (i * (2 * math.pi / n))
+			local x = math.cos(ang) * r
+			local y = math.sin(ang) * r
+			local off = Vector3.new(x, math.sin(tick() + i) * 2, y)
+			local offWorld = computeOffset(hr, off)
+			h.CFrame = CFrame.new(pred + offWorld, pred)
+		end
+	end)
+	disableColl()
+	curMode = "box"
+end
+
+local function orbitFlower2()
+	if not ot or not ot.Character then return end
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	if not hr then return end
+	respActive = true
+	coroutine.wrap(respLoop)()
+	local petalCount = 8
+	oc = rs.Heartbeat:Connect(function()
+		local ping = getPing()
+		local pred = enhancedPredPos(hr, ping)
+		local openAng = math.sin(tick() * 0.5) * math.rad(45)
+		local petalR = r + math.sin(tick() * 0.5) * 0.5
+		for i, h in ipairs(acc) do
+			local ang = (i * (2 * math.pi / petalCount))
+			local off = Vector3.new(math.cos(ang) * petalR, math.sin(ang) * 2, math.sin(ang) * petalR)
+			local offWorld = computeOffset(hr, off)
+			h.CFrame = CFrame.new(pred + offWorld, pred) * CFrame.Angles(openAng, 0, 0)
+		end
+	end)
+	disableColl()
+	curMode = "flower2"
+end
+
+local function orbitMushroom()
+	if not ot or not ot.Character then return end
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	if not hr then return end
+	respActive = true
+	coroutine.wrap(respLoop)()
+	oc = rs.Heartbeat:Connect(function()
+		local base = tick() * sp
+		local ping = getPing()
+		local pred = enhancedPredPos(hr, ping)
+		local n = #acc
+		local mushroomHeight = 6
+		local mushroomCap = r
+		for i, h in ipairs(acc) do
+			local ang = base + (i * (2 * math.pi / n))
+			local yOffset = math.sin(ang) * mushroomHeight
+			local capRadius = mushroomCap + math.cos(base + i) * 2
+			local off = Vector3.new(math.cos(ang) * capRadius, yOffset, math.sin(ang) * capRadius)
+			local offWorld = computeOffset(hr, off)
+			h.CFrame = CFrame.new(pred + offWorld, pred)
+		end
+	end)
+	disableColl()
+	curMode = "mushroom"
+end
+
 local function orbitHexagon()
     if not ot or not ot.Character then return end
     local hr = ot.Character:FindFirstChild("HumanoidRootPart")
