@@ -191,6 +191,31 @@ local function orbitWave()
 	end)
 	disableColl() curMode="w"
 end
+local function orbitHexagon()
+    if not ot or not ot.Character then return end
+    local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+    if not hr then return end
+    respActive = true
+    coroutine.wrap(respLoop)()
+
+    local n = 6  -- A hexagon has 6 points
+    local offsetY = 0
+    oc = rs.Heartbeat:Connect(function()
+        local ping = getPing()
+        local pred = enhancedPredPos(hr, ping)
+        local base = tick() * sp
+
+        for i, h in ipairs(acc) do
+            local angle = base + (i * (2 * math.pi / n))  -- Evenly distribute accessories in a hexagon
+            local radius = r
+            local off = Vector3.new(math.cos(angle) * radius, offsetY, math.sin(angle) * radius)
+            local offWorld = computeOffset(hr, off)
+            h.CFrame = CFrame.new(pred + offWorld, pred)
+        end
+    end)
+    disableColl()
+    curMode = "hex"
+end
 
 local function orbit8()
 	if not ot or not ot.Character then return end
@@ -516,6 +541,62 @@ local function handleCmd(pl, msg)
 			if curMode~="heart" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitHeart() end end
 		elseif cmd=="wings" then
 			if curMode~="wings" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitWings() end end
+		elseif cmd == "hex" then
+   			if curMode ~= "hex" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitHexagon() end end
+		elseif curMode ~= "orbitDef" then
+       		 stopOrbit()
+       		 local ot = getTarg(targ, pl)
+       		 if ot then
+        	    orbitDef()
+        	end
+    	elseif curMode ~= "orbitWave" then
+     		   stopOrbit()
+     		   local ot = getTarg(targ, pl)
+      		  if ot then
+        	    orbitWave()
+      		  end
+  		  elseif curMode ~= "orbitSpiral" then
+        stopOrbit()
+   		     local ot = getTarg(targ, pl)
+        if ot then
+     	       orbitSpiral()
+        end
+    elseif curMode ~= "orbitSpiral2" then  -- New mode
+        stopOrbit()
+        local ot = getTarg(targ, pl)
+        if ot then
+            orbitSpiral2()
+        end
+    elseif curMode ~= "orbitCube" then  -- New mode
+        stopOrbit()
+        local ot = getTarg(targ, pl)
+        if ot then
+            orbitCube()
+        end
+    elseif curMode ~= "orbitBox" then  -- New mode
+        stopOrbit()
+        local ot = getTarg(targ, pl)
+        if ot then
+            orbitBox()
+        end
+    elseif curMode ~= "orbitFlower" then
+        stopOrbit()
+        local ot = getTarg(targ, pl)
+        if ot then
+            orbitFlower()
+        end
+    elseif curMode ~= "orbitFlower2" then  -- New mode
+        stopOrbit()
+        local ot = getTarg(targ, pl)
+        if ot then
+            orbitFlower2()
+        end
+    elseif curMode ~= "orbitMushroom" then  -- New mode
+        stopOrbit()
+        local ot = getTarg(targ, pl)
+        if ot then
+            orbitMushroom()
+        end
 		elseif cmd=="dragon" then
 			if curMode~="dragon" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitDragon() end end
 		end
