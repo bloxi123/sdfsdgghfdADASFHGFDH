@@ -56,7 +56,7 @@ local sp=2 -- Speed
 local r=6  -- Range/Offset
 local oh=3  -- Offset Height (may not be used by all modes)
 local oc=nil -- Orbit Connection
-local owner="BloxiAstra"
+local owner="ImOn_ValveIndex"
 local pre="."
 local ot=nil -- Orbit Target Player
 local maxAcc=10
@@ -892,7 +892,7 @@ function orbitWingsV5() -- modeWingsV5 (Wave Flap)
 	disableColl() curMode = "wingsv5"
 end
 
-local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1 Spacing - Horizontal Offset)
+local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1 Spacing - Always to Target's Left)
     if not ot or not ot.Character then return end
     local hr = ot.Character:FindFirstChild("HumanoidRootPart")
     if not hr then return end
@@ -910,7 +910,7 @@ local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1
     oc = rs.Heartbeat:Connect(function()
         local ping = getPing()
         local pred = enhancedPredPos(hr, ping)
-        local baseOffsetCFrame = CFrame.new(pred + hr.CFrame.RightVector * -5) -- 5 studs to the left
+        local baseOffsetCFrame = CFrame.new(pred) * CFrame.new(-5, 0, 0) * hr.CFrame.Rotation -- 5 studs to the left, relative to target rotation
 
         for i, hat in ipairs(acc) do
             local bodyPartData = bodyPartsConfig[i % #bodyPartsConfig + 1]
@@ -929,6 +929,7 @@ local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1
     end)
     disableColl() curMode = "copy"
 end
+
 local function handleCmd(pl, msg)
 	if pl.Name==owner and msg:sub(1,#pre)==pre then
 		local args = msg:sub(#pre+1):split(" ")
