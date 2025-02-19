@@ -58,7 +58,7 @@ local oh=3  -- Offset Height (may not be used by all modes)
 local oc=nil -- Orbit Connection
 local owner="BloxiAstra"
 local pre="."
-local ot=nil -- Orbit Target Player
+local ot=nil -- Orbit Target Player (not used in mode8 anymore)
 local maxAcc=10
 local respActive=false
 local curMode=nil
@@ -386,7 +386,7 @@ local function orbitFlower() -- f
 end
 
 local function orbitWeave() -- we
-	if not ot or not ot.Character then return end
+	if not ot or not ot.Character then end
 	local hr=ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
 	respActive=true; coroutine.wrap(respLoop)()
@@ -504,7 +504,7 @@ local function orbitMode2() -- mode2
 	oc = rs.Heartbeat:Connect(function()
 		local baseAngle = speed * tick()
 		local ping = getPing()
-		local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes, even though mode2 might not strictly need it.
 		local rootOrientation = hr.CFrame - hr.CFrame.Position -- Rotation only
 
 		for i, hat in ipairs(acc) do
@@ -532,7 +532,7 @@ local function orbitMode3() -- mode3
         if currentIndex <= #acc then
             local hat = acc[currentIndex]
             local ping = getPing()
-            local pred = enhancedPredPos(hr, ping)
+			local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
             local off = Vector3.new(0, height, 0)
             local offWorld = computeOffset(hr, off)
             hat.CFrame = CFrame.new(pred + offWorld, pred)
@@ -551,7 +551,7 @@ end
 
 local function orbitMode4() -- mode4
     if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart") -- hr is technically not used, but kept for consistency
 	if not hr then return end
 	respActive=true; coroutine.wrap(respLoop)()
     local mouse = lp:GetMouse()
@@ -559,9 +559,9 @@ local function orbitMode4() -- mode4
     oc = rs.Heartbeat:Connect(function()
         local targetPos = mouse.Hit.Position
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred = targetPos -- No need to predict mouse, just use current position
         for _, hat in ipairs(acc) do
-            hat.CFrame = CFrame.new(targetPos) -- Directly to mouse hit position, no orbit
+            hat.CFrame = CFrame.new(pred) -- Directly to mouse hit position, no orbit
         end
         if curMode ~= "mode4" then
             stopOrbit()
@@ -585,7 +585,7 @@ local function orbitMode5() -- mode5
             spiralAngle = 0
         end
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i, hat in ipairs(acc) do
             local x = math.sin(spiralAngle + i * spiralPitch) * (i * offset / 8)
@@ -625,7 +625,7 @@ local function orbitMode6() -- mode6
         local x = math.sin(angle) * offset
         local z = math.cos(angle) * offset
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i, v in ipairs(stack1) do
             local off = Vector3.new(x, i + height, -z)
@@ -670,7 +670,7 @@ local function orbitMode7() -- mode7
         local x = math.sin(angle) * offset
         local z = math.cos(angle) * offset
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i, v in ipairs(stack1) do
             local off = Vector3.new(x, i + height, -z)
@@ -697,29 +697,24 @@ local function orbitMode7() -- mode7
 end
 
 
-local function orbitMode8() -- mode8
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
+local function orbitMode8() -- mode8 (FIXED - Camera Follow)
+    respActive=true; coroutine.wrap(respLoop)()
     oc = rs.Heartbeat:Connect(function()
-        local forward = workspace.CurrentCamera.CFrame.LookVector
-		local right = workspace.CurrentCamera.CFrame.RightVector
-		local up = workspace.CurrentCamera.CFrame.UpVector
+        local camera = workspace.CurrentCamera
+        local forward = camera.CFrame.LookVector
+		local right = camera.CFrame.RightVector
+		local up = camera.CFrame.UpVector
 		local angle = math.pi * 2 / #acc * tick()
-        local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
-
+        local cameraPos = camera.CFrame.Position -- Camera Position as orbit center
 
 		for i, hat in ipairs(acc) do
 			local x = right * (math.sin(angle * (i-1))*offset)
 			local y = up * (math.cos(angle * (i-1))*offset)
 			local z = forward * (height+10) -- Height + 10 was in original script
-			local pos = workspace.CurrentCamera.CFrame.LookVector + z + x + y
-			local look = (workspace.CurrentCamera.CFrame.LookVector - pos).Unit
+			local pos = cameraPos + z + x + y -- Offset from camera position
+			local look = (cameraPos - pos).Unit -- Look at camera position
 
-            -- Direct world position, no need for computeOffset as it's camera relative
-			hat.CFrame = CFrame.new(pred + pos, pred) -- Orbit around predicted target position, but camera relative offsets
+            hat.CFrame = CFrame.new(pos, cameraPos) -- Position and look at camera
 		end
         if curMode ~= "mode8" then
             stopOrbit()
@@ -747,7 +742,7 @@ local function orbitMode9() -- mode9
     oc = rs.Heartbeat:Connect(function()
         local angle = tick() * speed
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i = 1, #circle1 do
             local x = math.sin(angle + (i * 5)) * offset
@@ -791,7 +786,7 @@ local function orbitMode10() -- mode10
     oc = rs.Heartbeat:Connect(function()
         local angle = tick() * speed
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i, v in ipairs(left) do
             local x = math.sin(angle + i) * offset
@@ -836,7 +831,7 @@ local function orbitMode11() -- mode11
     oc = rs.Heartbeat:Connect(function()
         local angle = tick() * speed
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i = 1, #circle1 do
             local x = -math.sin(angle + (i * angle)) * offset
@@ -888,7 +883,7 @@ local function orbitMode12() -- mode12
     oc = rs.Heartbeat:Connect(function()
         local angle = tick() * speed
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i = 1, #circle1 do
             local x = math.sin(angle + (i * 5)) * offset
@@ -931,7 +926,7 @@ local function orbitMode13() -- mode13
     oc = rs.Heartbeat:Connect(function()
         local angle = tick() * speed
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i = 1, #circle1 do
             local x = math.sin(angle + (i * 5)) * offset
@@ -957,14 +952,14 @@ end
 
 
 local function orbitMode14() -- mode14
-    if not ot or not ot.Character then return end
+    if not ot or not ot.Character then end
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
 	respActive=true; coroutine.wrap(respLoop)()
     oc = rs.Heartbeat:Connect(function()
         local angle = math.sin(tick()) * speed
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i, v in pairs(acc) do
             local x = math.sin(angle * (i - 1)) * offset
@@ -991,7 +986,7 @@ local function orbitMode15() -- mode15
 
     oc = rs.Heartbeat:Connect(function()
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i = 1, #acc do
             local off = CFrame.Angles(0, math.rad(hr.Orientation.Y), 0) * Vector3.new(0, height, -i * offset / 5)
@@ -1013,7 +1008,7 @@ local function orbitMode16() -- mode16
 	respActive=true; coroutine.wrap(respLoop)()
     oc = rs.Heartbeat:Connect(function()
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i, v in pairs(acc) do
             local x = math.cos(math.random(1, 255) + (i + 1)) * offset
@@ -1083,8 +1078,7 @@ local function orbitMode17() -- mode17
         offset2 = math.sin(angle) * offset
 		height2 = math.cos(angle) * height
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
-
+		local pred=enhancedPredPos(hr, ping) -- Keep prediction for character target modes
 
         for i = 1, #circle1 do
             local x = math.cos(angle + (i * #acc)) * offset2 / 2
@@ -1107,6 +1101,30 @@ local function orbitMode17() -- mode17
         end
     end)
     disableColl() curMode = "mode17"
+end
+
+-- NEW MOUSE ORBIT MODE
+local function orbitMouse() -- mouseorbit
+    respActive=true; coroutine.wrap(respLoop)()
+    local mouse = lp:GetMouse()
+
+    oc = rs.Heartbeat:Connect(function()
+        local mousePos = mouse.Hit.Position
+        local ping = getPing()
+        local pred = mousePos -- No prediction needed for mouse
+        local base=tick()*sp
+		local n=#acc
+		for i,h in ipairs(acc) do
+			local ang=base+(i*(2*math.pi/n))
+			local off=Vector3.new(math.cos(ang)*r,0,math.sin(ang)*r)
+            -- No computeOffset needed as mousePos is already world position
+			h.CFrame=CFrame.new(pred+off, pred)
+		end
+        if curMode ~= "mouseorbit" then
+            stopOrbit()
+        end
+    end)
+    disableColl() curMode = "mouseorbit"
 end
 
 
@@ -1172,7 +1190,7 @@ local function handleCmd(pl, msg)
         elseif cmd=="mode7" then
 			if curMode~="mode7" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode7() end end
         elseif cmd=="mode8" then
-			if curMode~="mode8" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode8() end end
+			if curMode~="mode8" then stopOrbit() orbitMode8() end end -- Call orbitMode8 directly, no target
         elseif cmd=="mode9" then
 			if curMode~="mode9" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode9() end end
         elseif cmd=="mode10" then
@@ -1191,6 +1209,9 @@ local function handleCmd(pl, msg)
 			if curMode~="mode16" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode16() end end
         elseif cmd=="mode17" then
 			if curMode~="mode17" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode17() end end
+        -- NEW MOUSE ORBIT COMMAND
+        elseif cmd=="mouseorbit" then
+			if curMode~="mouseorbit" then stopOrbit() orbitMouse() end end
 		end
 	end
 end
