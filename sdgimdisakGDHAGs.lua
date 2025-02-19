@@ -480,7 +480,7 @@ local function handleCmd(pl, msg)
 		local args = msg:sub(#pre+1):split(" ")
 		local cmd = args[1]:lower()
 		local targ = args[2] or (ot and ot.Name) or "me"
-		if cmd=="bring" then
+		if cmd=="come" then
 			if pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
 				lp.Character:MoveTo(pl.Character.HumanoidRootPart.Position)
 			end
