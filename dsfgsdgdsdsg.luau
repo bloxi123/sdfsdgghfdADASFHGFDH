@@ -629,7 +629,7 @@ local function orbitMode6() -- mode6
 end
 
 
-local function orbitMode7() -- mode7
+local function orbitMode7() -- mode7 (Finished)
     if not ot or not ot.Character then return end
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
@@ -641,7 +641,7 @@ local function orbitMode7() -- mode7
 	for i = 1, #acc do
 		if i < #acc / 3 then
 			stack1[#stack1 + 1] = acc[i]
-		elseif i < #acc / 3 * 2 or i == #acc then
+		elseif i < #acc / 3 * 2 then -- Corrected condition
 			stack2[#stack2 + 1] = acc[i]
 		else
 			stack3[#stack3 + 1] = acc[i]
@@ -680,7 +680,103 @@ local function orbitMode7() -- mode7
 end
 
 
-local function orbitMode8() -- mode18: Tornado/Vortex
+local function orbitModeHexagon() -- modeHexagon (New)
+    if not ot or not ot.Character then return end
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	if not hr then return end
+	respActive=true; coroutine.wrap(respLoop)()
+	oc = rs.Heartbeat:Connect(function()
+		local base = tick() * speed
+		local ping = getPing()
+		local pred = enhancedPredPos(hr, ping)
+		local n = #acc
+		for i, h in ipairs(acc) do
+			local angle = base + (i * (2 * math.pi / n))
+			local offX = r * math.cos(angle)
+			local offZ = r * math.sin(angle)
+			local offY = 0
+
+			if n >= 6 then -- Distribute in hexagon if enough accessories
+				local hexagonPoints = 6
+				local hexagonAngleStep = 2 * math.pi / hexagonPoints
+				local hexagonIndex = (i - 1) % hexagonPoints
+				local hexagonAngle = hexagonIndex * hexagonAngleStep
+				offX = r * math.cos(hexagonAngle + base)
+				offZ = r * math.sin(hexagonAngle + base)
+			end
+
+			local off = Vector3.new(offX, offY, offZ)
+			local offWorld = computeOffset(hr, off)
+			h.CFrame = CFrame.new(pred + offWorld, pred)
+		end
+	end)
+	disableColl() curMode = "hexagon"
+end
+
+local function orbitModeSnake() -- modeSnake (New)
+	if not ot or not ot.Character then return end
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	if not hr then return end
+	respActive=true; coroutine.wrap(respLoop)()
+	local snakeLength = #acc
+	local snakeSpacing = offset / snakeLength
+	oc = rs.Heartbeat:Connect(function()
+		local ping = getPing()
+		local pred = enhancedPredPos(hr, ping)
+		local lookVector = hr.CFrame.LookVector
+		for i, hat in ipairs(acc) do
+			local posOffset = lookVector * snakeSpacing * (i - 1)
+			local offWorldPos = (hr.CFrame * CFrame.new(-posOffset)).p - hr.CFrame.p
+			hat.CFrame = CFrame.new(pred + offWorldPos, pred)
+		end
+	end)
+	disableColl() curMode = "snake"
+end
+
+
+local function orbitWingsV2() -- modeWingsV2 (New - Animated Flap, Back Attach)
+	if not ot or not ot.Character then return end
+	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
+	if not hr then return end
+	respActive=true; coroutine.wrap(respLoop)()
+	oc=rs.Heartbeat:Connect(function()
+		local ping = getPing()
+		local pred = enhancedPredPos(hr, ping)
+		local wingSpan = r * 1.8
+		local wingLift = 2
+		local flapAmp = math.rad(30) -- Flap amplitude in radians
+		local flapSpeed = 2
+		local leftWing = {}
+		local rightWing = {}
+		for i, h in ipairs(acc) do
+			if i % 2 == 1 then table.insert(leftWing, h) else table.insert(rightWing, h) end
+		end
+
+		local function updateWings(wings, sideMultiplier)
+			local nWing = #wings
+			for i, h in ipairs(wings) do
+				local tVal = i/(nWing+1)
+				local basePos = Vector3.new(wingSpan*tVal * sideMultiplier, -wingLift*tVal, 0)
+				local flapAngle = math.sin(tick()*flapSpeed + i) * flapAmp * sideMultiplier
+				local targetCFrame = hr.CFrame
+					* CFrame.Angles(0, math.pi, 0) -- Face backward
+					* CFrame.Angles(0, 0, flapAngle) -- Flap rotation
+					* CFrame.new(basePos)
+
+				local offWorldPos = targetCFrame.p - hr.CFrame.p -- Get world offset
+				h.CFrame = CFrame.new(pred + offWorldPos, pred)
+			end
+		end
+
+		updateWings(leftWing, -1) -- Left wing, negative side multiplier
+		updateWings(rightWing, 1)  -- Right wing, positive side multiplier
+
+	end)
+	disableColl() curMode = "wingsv2"
+end
+
+
+local function orbitMode18() -- mode18: Tornado/Vortex
     if not ot or not ot.Character then return end
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
@@ -705,7 +801,7 @@ local function orbitMode8() -- mode18: Tornado/Vortex
 end
 
 
-local function orbitMode9() -- mode19: Pulse
+local function orbitMode19() -- mode19: Pulse
     if not ot or not ot.Character then return end
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
@@ -728,7 +824,7 @@ local function orbitMode9() -- mode19: Pulse
     disableColl() curMode = "mode19"
 end
 
-local function orbitMode10() -- mode20: DNA/Double Helix
+local function orbitMode20() -- mode20: DNA/Double Helix
     if not ot or not ot.Character then return end
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
@@ -1110,11 +1206,11 @@ local function handleCmd(pl, msg)
         elseif cmd=="mode7" then
 			if curMode~="mode7" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode7() end end
         elseif cmd=="mode18" then -- New Tornado Mode
-			if curMode~="mode18" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode8() end end -- orbitMode8 is now Tornado
+			if curMode~="mode18" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode18() end end -- orbitMode8 is now Tornado
         elseif cmd=="mode19" then -- New Pulse Mode
-			if curMode~="mode19" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode9() end end -- orbitMode9 is now Pulse
+			if curMode~="mode19" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode19() end end -- orbitMode9 is now Pulse
         elseif cmd=="mode20" then -- New DNA Mode
-			if curMode~="mode20" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode10() end end -- orbitMode10 is now DNA
+			if curMode~="mode20" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode20() end end -- orbitMode10 is now DNA
         elseif cmd=="mode11" then
 			if curMode~="mode11" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode11() end end
         elseif cmd=="mode12" then
@@ -1129,7 +1225,13 @@ local function handleCmd(pl, msg)
 			if curMode~="mode16" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode16() end end
         elseif cmd=="mode17" then
 			if curMode~="mode17" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode17() end end
-        -- Removed Mouse Orbit Command
+		-- New Modes Commands
+		elseif cmd=="hexagon" then
+			if curMode~="hexagon" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitModeHexagon() end end
+		elseif cmd=="snake" then
+			if curMode~="snake" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitModeSnake() end end
+		elseif cmd=="wingsv2" then
+			if curMode~="wingsv2" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitWingsV2() end end
 		end
 	end
 end
