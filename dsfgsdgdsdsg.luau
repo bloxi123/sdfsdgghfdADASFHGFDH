@@ -891,8 +891,7 @@ function orbitWingsV5() -- modeWingsV5 (Wave Flap)
 	end)
 	disableColl() curMode = "wingsv5"
 end
-
-local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1 Spacing - Always to Target's Left)
+local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED - Match Target LookVector)
     if not ot or not ot.Character then return end
     local hr = ot.Character:FindFirstChild("HumanoidRootPart")
     if not hr then return end
@@ -903,14 +902,20 @@ local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1
         [2] = {offset = Vector3.new(0, 0, 0), r15part = "UpperTorso", r6part = "Torso"},
         [3] = {offset = Vector3.new(0, 0, 0), r15part = "LeftHand", r6part = "Left Arm"},
         [4] = {offset = Vector3.new(0, 0, 0), r15part = "RightHand", r6part = "Right Arm"},
-        [5] = {offset = Vector3.new(0, 0, 0), r15part = "LeftFoot", r6part = "Left Leg"},
-        [6] = {offset = Vector3.new(0, 0, 0), r15part = "RightFoot", r6part = "Right Leg"}
+        [5] = {offset = Vector3.new(0, 0, 0), r15part = "LeftLowerLeg", r6part = "Left Leg"},
+        [6] = {offset = Vector3.new(0, 0, 0), r15part = "RightLowerLeg", r6part = "Right Leg"}
     }
 
     oc = rs.Heartbeat:Connect(function()
         local ping = getPing()
         local pred = enhancedPredPos(hr, ping)
-        local baseOffsetCFrame = CFrame.new(pred) * CFrame.new(-5, 0, 0) * hr.CFrame.Rotation -- 5 studs to the left, relative to target rotation
+
+        local targetRootPos = hr.Position
+        local targetLookVector = hr.CFrame.LookVector
+        local baseOffsetPosition = pred + (-hr.CFrame.RightVector * 7) -- Position 5 studs to the left of predicted position
+        local baseLookAtPosition = baseOffsetPosition + targetLookVector -- Point to the same direction as target
+
+        local baseOffsetCFrame = CFrame.lookAt(baseOffsetPosition, baseLookAtPosition) -- Create CFrame looking in target's direction
 
         for i, hat in ipairs(acc) do
             local bodyPartData = bodyPartsConfig[i % #bodyPartsConfig + 1]
@@ -927,8 +932,10 @@ local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1
             end
         end
     end)
-    disableColl() curMode = "copy"
+    disableColl() 
+    curMode = "copy"
 end
+
 
 local function handleCmd(pl, msg)
 	if pl.Name==owner and msg:sub(1,#pre)==pre then
