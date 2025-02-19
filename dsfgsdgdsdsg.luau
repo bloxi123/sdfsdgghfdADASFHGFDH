@@ -892,14 +892,15 @@ function orbitWingsV5() -- modeWingsV5 (Wave Flap)
 	disableColl() curMode = "wingsv5"
 end
 
-local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1 spacing)
+
+local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED Vertical Order)
     if not ot or not ot.Character then return end
     local hr = ot.Character:FindFirstChild("HumanoidRootPart")
     if not hr then return end
     respActive=true; coroutine.wrap(respLoop)()
 
-    local bodyPartsConfig = {
-        [1] = {offset = Vector3.new(0, 0, 0), r15part = "Head", r6part = "Head"}, -- Removed individual offsets, now copying 1:1
+    local bodyPartsConfig = { -- Corrected order to ensure top-to-bottom
+        [1] = {offset = Vector3.new(0, 0, 0), r15part = "Head", r6part = "Head"},
         [2] = {offset = Vector3.new(0, 0, 0), r15part = "UpperTorso", r6part = "Torso"},
         [3] = {offset = Vector3.new(0, 0, 0), r15part = "LeftHand", r6part = "Left Arm"},
         [4] = {offset = Vector3.new(0, 0, 0), r15part = "RightHand", r6part = "Right Arm"},
@@ -910,16 +911,19 @@ local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1
     oc = rs.Heartbeat:Connect(function()
         local ping = getPing()
         local pred = enhancedPredPos(hr, ping)
-        local baseOffsetCFrame = CFrame.new(pred + hr.CFrame.RightVector * -5) -- 5 studs to the right
+        local baseOffset = hr.CFrame.RightVector * -5 -- 5 studs to the left
 
         for i, hat in ipairs(acc) do
             local bodyPartData = bodyPartsConfig[i % #bodyPartsConfig + 1]
             if bodyPartData then
                 local targetPart = ot.Character:FindFirstChild(bodyPartData.r15part) or ot.Character:FindFirstChild(bodyPartData.r6part)
                 if targetPart then
-                    local targetBodyPartCFrame = targetPart.CFrame
-                    local accessoryCFrame = baseOffsetCFrame * targetBodyPartCFrame:ToObjectSpace(hr.CFrame) -- Keep relative pos to target root
-                    hat.CFrame = accessoryCFrame
+                    local targetPartPosition = targetPart.Position
+                    local rootPosition = hr.Position
+                    local verticalOffset = targetPartPosition.Y - rootPosition.Y -- Calculate vertical offset from root
+
+                    local accessoryPosition = pred + baseOffset + Vector3.new(0, verticalOffset, 0) -- Apply vertical offset from target part
+                    hat.CFrame = CFrame.new(accessoryPosition)
                 end
             end
         end
