@@ -412,7 +412,7 @@ local function orbitHeart() -- heart
 	disableColl() curMode="heart"
 end
 
-local function orbitWings() -- wings
+local function orbitWings() -- wings (Original)
 	if not ot or not ot.Character then return end
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
@@ -629,7 +629,7 @@ local function orbitMode6() -- mode6
 end
 
 
-local function orbitMode7() -- mode7 (Finished)
+local function orbitMode7() -- mode7
     if not ot or not ot.Character then return end
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
@@ -685,7 +685,7 @@ local function orbitModeHexagon() -- modeHexagon (New)
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
 	respActive=true; coroutine.wrap(respLoop)()
-	oc = rs.Heartbeat:Connect(function()
+	oc=rs.Heartbeat:Connect(function()
 		local base = tick() * speed
 		local ping = getPing()
 		local pred = enhancedPredPos(hr, ping)
@@ -752,12 +752,12 @@ local function orbitWingsV2() -- modeWingsV2 (New - Animated Flap, Back Attach)
 			if i % 2 == 1 then table.insert(leftWing, h) else table.insert(rightWing, h) end
 		end
 
-		local function updateWings(wings, sideMultiplier)
+		local function updateWings(wings, sideMultiplier, speedMultiplier, ampMultiplier)
 			local nWing = #wings
 			for i, h in ipairs(wings) do
 				local tVal = i/(nWing+1)
 				local basePos = Vector3.new(wingSpan*tVal * sideMultiplier, -wingLift*tVal, 0)
-				local flapAngle = math.sin(tick()*flapSpeed + i) * flapAmp * sideMultiplier
+				local flapAngle = math.sin(tick()*flapSpeed * speedMultiplier + i) * flapAmp * ampMultiplier * sideMultiplier
 				local targetCFrame = hr.CFrame
 					* CFrame.Angles(0, math.pi, 0) -- Face backward
 					* CFrame.Angles(0, 0, flapAngle) -- Flap rotation
@@ -768,380 +768,162 @@ local function orbitWingsV2() -- modeWingsV2 (New - Animated Flap, Back Attach)
 			end
 		end
 
-		updateWings(leftWing, -1) -- Left wing, negative side multiplier
-		updateWings(rightWing, 1)  -- Right wing, positive side multiplier
+		updateWings(leftWing, -1, 1, 1) -- Left wing, normal flap
+		updateWings(rightWing, 1, 1, 1)  -- Right wing, normal flap
 
 	end)
 	disableColl() curMode = "wingsv2"
 end
 
+local function orbitWingsV3() -- modeWingsV3 (Fast Flap)
+	if curMode~="wingsv2" then orbitWingsV2() end -- use v2 base and just change flap speed
+	oc:Disconnect()
+	oc=rs.Heartbeat:Connect(function()
+		local ping = getPing()
+		local pred = enhancedPredPos(ot.Character.HumanoidRootPart, ping)
+		local wingSpan = r * 1.8
+		local wingLift = 2
+		local flapAmp = math.rad(20) -- Reduced amplitude for faster flap
+		local flapSpeed = 4 -- Increased speed
+		local leftWing = {}
+		local rightWing = {}
+		for i, h in ipairs(acc) do
+			if i % 2 == 1 then table.insert(leftWing, h) else table.insert(rightWing, h) end
+		end
 
-local function orbitMode18() -- mode18: Tornado/Vortex
+		local function updateWings(wings, sideMultiplier, speedMultiplier, ampMultiplier)
+			local nWing = #wings
+			for i, h in ipairs(wings) do
+				local tVal = i/(nWing+1)
+				local basePos = Vector3.new(wingSpan*tVal * sideMultiplier, -wingLift*tVal, 0)
+				local flapAngle = math.sin(tick()*flapSpeed * speedMultiplier + i) * flapAmp * ampMultiplier * sideMultiplier
+				local targetCFrame = ot.Character.HumanoidRootPart.CFrame
+					* CFrame.Angles(0, math.pi, 0) -- Face backward
+					* CFrame.Angles(0, 0, flapAngle) -- Flap rotation
+					* CFrame.new(basePos)
+
+				local offWorldPos = targetCFrame.p - ot.Character.HumanoidRootPart.CFrame.p -- Get world offset
+				h.CFrame = CFrame.new(pred + offWorldPos, pred)
+			end
+		end
+
+		updateWings(leftWing, -1, 1, 1) -- Left wing
+		updateWings(rightWing, 1, 1, 1)  -- Right wing
+
+	end)
+	disableColl() curMode = "wingsv3"
+end
+
+function orbitWingsV4() -- modeWingsV4 (Slow big flap)
+	if curMode~="wingsv2" then orbitWingsV2() end -- use v2 base and just change flap speed
+	oc:Disconnect()
+	oc=rs.Heartbeat:Connect(function()
+		local ping = getPing()
+		local pred = enhancedPredPos(ot.Character.HumanoidRootPart, ping)
+		local wingSpan = r * 2.2 -- bigger wings
+		local wingLift = 3
+		local flapAmp = math.rad(60) -- bigger amplitude
+		local flapSpeed = 0.7 -- slower speed
+		local leftWing = {}
+		local rightWing = {}
+		for i, h in ipairs(acc) do
+			if i % 2 == 1 then table.insert(leftWing, h) else table.insert(rightWing, h) end
+		end
+
+		local function updateWings(wings, sideMultiplier, speedMultiplier, ampMultiplier)
+			local nWing = #wings
+			for i, h in ipairs(wings) do
+				local tVal = i/(nWing+1)
+				local basePos = Vector3.new(wingSpan*tVal * sideMultiplier, -wingLift*tVal, 0)
+				local flapAngle = math.sin(tick()*flapSpeed * speedMultiplier + i) * flapAmp * ampMultiplier * sideMultiplier
+				local targetCFrame = ot.Character.HumanoidRootPart.CFrame
+					* CFrame.Angles(0, math.pi, 0) -- Face backward
+					* CFrame.Angles(0, 0, flapAngle) -- Flap rotation
+					* CFrame.new(basePos)
+
+				local offWorldPos = targetCFrame.p - ot.Character.HumanoidRootPart.CFrame.p -- Get world offset
+				h.CFrame = CFrame.new(pred + offWorldPos, pred)
+			end
+		end
+
+		updateWings(leftWing, -1, 1, 1) -- Left wing
+		updateWings(rightWing, 1, 1, 1)  -- Right wing
+
+	end)
+	disableColl() curMode = "wingsv4"
+end
+
+function orbitWingsV5() -- modeWingsV5 (Wave Flap)
+	if curMode~="wingsv2" then orbitWingsV2() end -- use v2 base and just change flap speed
+	oc:Disconnect()
+	oc=rs.Heartbeat:Connect(function()
+		local ping = getPing()
+		local pred = enhancedPredPos(ot.Character.HumanoidRootPart, ping)
+		local wingSpan = r * 1.8
+		local wingLift = 2
+		local flapAmp = math.rad(45)
+		local flapSpeed = 2.5
+		local leftWing = {}
+		local rightWing = {}
+		for i, h in ipairs(acc) do
+			if i % 2 == 1 then table.insert(leftWing, h) else table.insert(rightWing, h) end
+		end
+
+		local function updateWings(wings, sideMultiplier, speedMultiplier, ampMultiplier)
+			local nWing = #wings
+			for i, h in ipairs(wings) do
+				local tVal = i/(nWing+1)
+				local basePos = Vector3.new(-wingSpan*tVal * sideMultiplier, -wingLift*tVal, 0)
+				local flapAngle = math.sin(tick()*flapSpeed * speedMultiplier + i*0.5) * flapAmp * ampMultiplier * sideMultiplier -- wave in flap
+				local targetCFrame = ot.Character.HumanoidRootPart.CFrame
+					* CFrame.Angles(0, math.pi, 0) -- Face backward
+					* CFrame.Angles(0, 0, flapAngle) -- Flap rotation
+					* CFrame.new(basePos)
+
+				local offWorldPos = targetCFrame.p - ot.Character.HumanoidRootPart.CFrame.p -- Get world offset
+				h.CFrame = CFrame.new(pred + offWorldPos, pred)
+			end
+		end
+
+		updateWings(leftWing, -1, 1, 1) -- Left wing
+		updateWings(rightWing, 1, 1, 1)  -- Right wing
+
+	end)
+	disableColl() curMode = "wingsv5"
+end
+
+local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy)
     if not ot or not ot.Character then return end
 	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
 	if not hr then return end
 	respActive=true; coroutine.wrap(respLoop)()
+
+	local bodyPartsConfig = {
+		[1] = {offset = Vector3.new(0, 1, 0), r15part = "Head", r6part = "Head"},
+		[2] = {offset = Vector3.new(0, -1, 0), r15part = "UpperTorso", r6part = "Torso"},
+		[3] = {offset = Vector3.new(1, 0, 0), r15part = "LeftHand", r6part = "Left Arm"},
+		[4] = {offset = Vector3.new(-1, 0, 0), r15part = "RightHand", r6part = "Right Arm"},
+		[5] = {offset = Vector3.new(0.5, -2, 0), r15part = "LeftFoot", r6part = "Left Leg"},
+		[6] = {offset = Vector3.new(-0.5, -2, 0), r15part = "RightFoot", r6part = "Right Leg"} -- Using Foot for both R15/R6 Right leg for simplicity
+	}
+
     oc = rs.Heartbeat:Connect(function()
-        local base = tick() * speed
         local ping = getPing()
         local pred = enhancedPredPos(hr, ping)
-        local n = #acc
 
-        for i, h in ipairs(acc) do
-            local angle = base + (i * (2 * math.pi / n))
-            local normalizedIndex = (i - 1) / (n - 1) -- Normalize index to 0-1
-            local vortexHeight = normalizedIndex * height -- Height increases with index
-            local vortexRadius = r * (1 - normalizedIndex * 0.8) -- Radius decreases with index
-            local off = Vector3.new(math.cos(angle) * vortexRadius, vortexHeight, math.sin(angle) * vortexRadius)
-            local offWorld = computeOffset(hr, off)
-            h.CFrame = CFrame.new(pred + offWorld, pred)
-        end
-    end)
-    disableColl() curMode = "mode18"
-end
-
-
-local function orbitMode19() -- mode19: Pulse
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    oc = rs.Heartbeat:Connect(function()
-        local base = tick() * speed
-        local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
-        local n = #acc
-        local pulseFactor = math.sin(tick() * speed * 0.5) * 0.5 + 1 -- Oscillates between 0.5 and 1.5
-
-        for i, h in ipairs(acc) do
-            local angle = base + (i * (2 * math.pi / n))
-            local currentRadius = r * pulseFactor
-            local off = Vector3.new(math.cos(angle) * currentRadius, 0, math.sin(angle) * currentRadius)
-            local offWorld = computeOffset(hr, off)
-            h.CFrame = CFrame.new(pred + offWorld, pred)
-        end
-    end)
-    disableColl() curMode = "mode19"
-end
-
-local function orbitMode20() -- mode20: DNA/Double Helix
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    local helixOffset = r * 0.5 -- Spacing between helixes
-
-    oc = rs.Heartbeat:Connect(function()
-        local base = tick() * speed
-        local ping = getPing()
-        local pred = enhancedPredPos(hr, ping)
-        local n = #acc
-
-        for i, h in ipairs(acc) do
-            local angle = base + (i * (2 * math.pi / n)) * 2 -- Double the angle for helixes
-            local helixRadius = r
-            local helixHeight = math.sin(angle * 2) * height * 0.5 -- Vertical wave for helix shape
-
-            local xOffset = (i % 2 == 0) and helixOffset or -helixOffset -- Alternate helix sides
-            local off = Vector3.new(math.cos(angle) * helixRadius + xOffset, helixHeight, math.sin(angle) * helixRadius)
-            local offWorld = computeOffset(hr, off)
-            h.CFrame = CFrame.new(pred + offWorld, pred)
-        end
-    end)
-    disableColl() curMode = "mode20"
-end
-
-
-local function orbitMode11() -- mode11
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    local oldOffset = offset
-
-	local circle1 = {}
-	local circle2 = {}
-	for i, v in pairs(acc) do
-		if (#circle1 < #acc / 2) then
-			circle1[#circle1 + 1] = v
-		else
-			circle2[#circle2 + 1] = v
+		for i, hat in ipairs(acc) do
+			local bodyPartData = bodyPartsConfig[i % #bodyPartsConfig + 1] -- Cycle through body parts
+			if bodyPartData then
+				local targetPart = hr:FindFirstChild(bodyPartData.r15part) or hr:FindFirstChild(bodyPartData.r6part)
+				if targetPart then
+					local targetCFrame = targetPart.CFrame * CFrame.new(bodyPartData.offset)
+					local offWorldPos = targetCFrame.p - hr.CFrame.p
+					hat.CFrame = CFrame.new(pred + offWorldPos, pred)
+				end
+			end
 		end
-	end
-
-    oc = rs.Heartbeat:Connect(function()
-        local angle = tick() * speed
-        local ping = getPing()
-		local pred = enhancedPredPos(hr, ping)
-
-        for i = 1, #circle1 do
-            local x = -math.sin(angle + (i * angle)) * offset
-            local y = math.cos(angle) / 2 * oldOffset
-            local z = math.cos(angle + (i * -angle)) * offset
-
-            offset = math.sin(angle) / 2 * oldOffset
-
-            local off = CFrame.Angles(0, math.rad(hr.Orientation.Y), 0) * Vector3.new(x, height + y, z)
-            local offWorld = computeOffset(hr, off)
-            circle1[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-
-        for i = 1, #circle2 do
-            local x = -math.sin(angle + (i * angle)) * offset
-            local y = -math.cos(angle) / 2 * oldOffset
-            local z = math.cos(angle + (i * angle)) * offset
-
-            offset = math.sin(angle) / 2 * oldOffset
-
-            local off = CFrame.Angles(0, math.rad(hr.Orientation.Y), 0) * Vector3.new(x, height + y, z)
-            local offWorld = computeOffset(hr, off)
-            circle2[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-        offset = oldOffset -- Restore offset for other modes
-        if curMode ~= "mode11" then
-            stopOrbit()
-        end
     end)
-    disableColl() curMode = "mode11"
-end
-
-
-local function orbitMode12() -- mode12
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    local circle1 = {}
-	local circle2 = {}
-	for i, v in pairs(acc) do
-		if (#circle1 < #acc / 2) then
-			circle1[#circle1 + 1] = v
-		else
-			circle2[#circle2 + 1] = v
-		end
-	end
-
-    oc = rs.Heartbeat:Connect(function()
-        local angle = tick() * speed
-        local ping = getPing()
-		local pred = enhancedPredPos(hr, ping)
-
-        for i = 1, #circle1 do
-            local x = math.sin(angle + (i * 5)) * offset
-            local z = math.cos(angle + (i * 5)) * offset
-            local off = CFrame.Angles(0, math.rad(hr.Orientation.Y), 0) * Vector3.new(x, height, z)
-            local offWorld = computeOffset(hr, off)
-            circle1[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-
-        for i = 1, #circle2 do
-            local x = math.sin(angle + (i * 5)) * offset
-            local z = math.cos(angle + (i * 5)) * offset
-            local off = CFrame.Angles(0, math.rad(-hr.Orientation.Y), 0) * Vector3.new(x, height + 2, z)
-            local offWorld = computeOffset(hr, off)
-            circle2[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-        if curMode ~= "mode12" then
-            stopOrbit()
-        end
-    end)
-    disableColl() curMode = "mode12"
-end
-
-
-local function orbitMode13() -- mode13
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    local circle1 = {}
-	local circle2 = {}
-	for i, v in pairs(acc) do
-		if (#circle1 < #acc / 2) then
-			circle1[#circle1 + 1] = v
-		else
-			circle2[#circle2 + 1] = v
-		end
-	end
-
-    oc = rs.Heartbeat:Connect(function()
-        local angle = tick() * speed
-        local ping = getPing()
-		local pred = enhancedPredPos(hr, ping)
-
-        for i = 1, #circle1 do
-            local x = math.sin(angle + (i * 5)) * offset
-            local z = math.cos(angle + (i * 5)) * offset
-            local off = CFrame.Angles(0, math.rad(hr.Orientation.Y), 0) * Vector3.new(x + offset * 2, height, z)
-            local offWorld = computeOffset(hr, off)
-            circle1[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-
-        for i = 1, #circle2 do
-            local x = math.sin(angle + (i * 5)) * offset
-            local z = math.cos(angle + (i * 5)) * offset
-            local off = CFrame.Angles(0, math.rad(hr.Orientation.Y), 0) * Vector3.new(x - offset * 2, height, z)
-            local offWorld = computeOffset(hr, off)
-            circle2[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-        if curMode ~= "mode13" then
-            stopOrbit()
-        end
-    end)
-    disableColl() curMode = "mode13"
-end
-
-
-local function orbitMode14() -- mode14
-    if not ot or not ot.Character then end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    oc = rs.Heartbeat:Connect(function()
-        local angle = math.sin(tick()) * speed
-        local ping = getPing()
-		local pred = enhancedPredPos(hr, ping)
-
-        for i, v in pairs(acc) do
-            local x = math.sin(angle * (i - 1)) * offset
-            local y = math.sin(angle * (i - 1)) + ((i * height / 5) + angle)
-            local z = math.cos(angle * (i - 1)) * offset
-            local off = Vector3.new(x, y - 2, z)
-            local offWorld = computeOffset(hr, off)
-            v.CFrame = CFrame.new(pred + offWorld, pred)
-        end
-        if curMode ~= "mode14" then
-            stopOrbit()
-        end
-    end)
-    disableColl() curMode = "mode14"
-end
-
-
-local function orbitMode15() -- mode15
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    height = -1 -- Overriding global height for this mode, as in script 2
-
-    oc = rs.Heartbeat:Connect(function()
-        local ping = getPing()
-		local pred = enhancedPredPos(hr, ping)
-
-        for i = 1, #acc do
-            local off = CFrame.Angles(0, math.rad(hr.Orientation.Y), 0) * Vector3.new(0, height, -i * offset / 5)
-            local offWorld = computeOffset(hr, off)
-            acc[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-        if curMode ~= "mode15" then
-            stopOrbit()
-        end
-    end)
-    disableColl() curMode = "mode15"
-end
-
-
-local function orbitMode16() -- mode16
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    oc = rs.Heartbeat:Connect(function()
-        local ping = getPing()
-		local pred = enhancedPredPos(hr, ping)
-
-        for i, v in pairs(acc) do
-            local x = math.cos(math.random(1, 255) + (i + 1)) * offset
-            local z = math.sin(math.random(1, 255) + (i + 1)) * offset
-
-            local m = math.random(1, 13)
-            local posOffset = Vector3.new(0,0,0)
-            if m == 1 then
-                posOffset = Vector3.new(x, height, z)
-            elseif m == 2 then
-                posOffset = Vector3.new(z, height, x)
-            elseif m == 3 then
-                posOffset = Vector3.new(-x, height, z)
-            elseif m == 4 then
-                posOffset = Vector3.new(x, height, -z)
-            elseif m == 5 then
-                posOffset = Vector3.new(x, z, z)
-            elseif m == 6 then
-                posOffset = Vector3.new(x, x, z)
-            elseif m == 7 then
-                posOffset = Vector3.new(-x, x, z)
-            elseif m == 8 then
-                posOffset = Vector3.new(x, -x, z)
-            elseif m == 9 then
-                posOffset = Vector3.new(x, x, -z)
-            elseif m == 10 then
-                posOffset = Vector3.new(-x, z, z)
-            elseif m == 11 then
-                posOffset = Vector3.new(x, -z, z)
-            elseif m == 12 then
-                posOffset = Vector3.new(x, z, -z)
-            elseif m == 13 then
-                posOffset = Vector3.new(z, z, z)
-            end
-            local offWorld = computeOffset(hr, posOffset)
-            v.CFrame = CFrame.new(pred + offWorld, pred)
-        end
-        if curMode ~= "mode16" then
-            stopOrbit()
-        end
-    end)
-    disableColl() curMode = "mode16"
-end
-
-
-local function orbitMode17() -- mode17
-    if not ot or not ot.Character then return end
-	local hr = ot.Character:FindFirstChild("HumanoidRootPart")
-	if not hr then return end
-	respActive=true; coroutine.wrap(respLoop)()
-    local circle1 = {}
-	local circle2 = {}
-
-	local offset2 = 0
-	local height2 = 0
-
-	for i, v in pairs(acc) do
-		if (#circle1 < #acc / 2) then
-			circle1[#circle1 + 1] = v
-		else
-			circle2[#circle2 + 1] = v
-		end
-	end
-
-    oc = rs.Heartbeat:Connect(function()
-        local angle = tick() * speed + 1
-        offset2 = math.sin(angle) * offset
-		height2 = math.cos(angle) * height
-        local ping = getPing()
-		local pred = enhancedPredPos(hr, ping)
-
-        for i = 1, #circle1 do
-            local x = math.cos(angle + (i * #acc)) * offset2 / 2
-            local z = math.sin(angle + (i * #acc)) * offset2 / 2
-
-            local off = Vector3.new(x, -height2, z)
-            local offWorld = computeOffset(hr, off)
-            circle1[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-
-        for i = 1, #circle2 do
-            local x = math.cos(angle + (i * #acc)) * offset2 / 2
-            local z = math.sin(angle + (i * #acc)) * offset2 / 2
-            local off = Vector3.new(x, height2, z)
-            local offWorld = computeOffset(hr, off)
-            circle2[i].CFrame = CFrame.new(pred + offWorld, pred)
-        end
-        if curMode ~= "mode17" then
-            stopOrbit()
-        end
-    end)
-    disableColl() curMode = "mode17"
+    disableColl() curMode = "copy"
 end
 
 
@@ -1232,6 +1014,14 @@ local function handleCmd(pl, msg)
 			if curMode~="snake" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitModeSnake() end end
 		elseif cmd=="wingsv2" then
 			if curMode~="wingsv2" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitWingsV2() end end
+		elseif cmd=="wingsv3" then
+			if curMode~="wingsv3" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitWingsV3() end end
+		elseif cmd=="wingsv4" then
+			if curMode~="wingsv4" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitWingsV4() end end
+		elseif cmd=="wingsv5" then
+			if curMode~="wingsv5" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitWingsV5() end end
+		elseif cmd=="copy" then
+			if curMode~="copy" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitBodyPartCopy() end end
 		end
 	end
 end
