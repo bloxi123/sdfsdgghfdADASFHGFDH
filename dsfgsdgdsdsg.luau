@@ -1190,7 +1190,7 @@ local function handleCmd(pl, msg)
         elseif cmd=="mode7" then
 			if curMode~="mode7" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode7() end end
         elseif cmd=="mode8" then
-			if curMode~="mode8" then stopOrbit() orbitMode8() end end -- Call orbitMode8 directly, no target
+			if curMode~="mode8" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode8() end end -- Call orbitMode8 directly, no target
         elseif cmd=="mode9" then
 			if curMode~="mode9" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode9() end end
         elseif cmd=="mode10" then
@@ -1211,7 +1211,7 @@ local function handleCmd(pl, msg)
 			if curMode~="mode17" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMode17() end end
         -- NEW MOUSE ORBIT COMMAND
         elseif cmd=="mouseorbit" then
-			if curMode~="mouseorbit" then stopOrbit() orbitMouse() end end
+			if curMode~="mouseorbit" then stopOrbit() ot = getTarg(targ, pl) if ot then orbitMouse() end end
 		end
 	end
 end
