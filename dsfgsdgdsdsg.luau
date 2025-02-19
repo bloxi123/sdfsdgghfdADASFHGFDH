@@ -891,33 +891,35 @@ function orbitWingsV5() -- modeWingsV5 (Wave Flap)
 	end)
 	disableColl() curMode = "wingsv5"
 end
-local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy)
+
+local function orbitBodyPartCopy() -- modeCopy (New - Body Part Copy - FIXED 1:1 spacing)
     if not ot or not ot.Character then return end
     local hr = ot.Character:FindFirstChild("HumanoidRootPart")
     if not hr then return end
     respActive=true; coroutine.wrap(respLoop)()
 
     local bodyPartsConfig = {
-        [1] = {offset = Vector3.new(0, 1, 0), r15part = "Head", r6part = "Head"},
-        [2] = {offset = Vector3.new(0, -1, 0), r15part = "UpperTorso", r6part = "Torso"},
-        [3] = {offset = Vector3.new(1, 0, 0), r15part = "LeftHand", r6part = "Left Arm"},
-        [4] = {offset = Vector3.new(-1, 0, 0), r15part = "RightHand", r6part = "Right Arm"},
-        [5] = {offset = Vector3.new(0.5, -2, 0), r15part = "LeftFoot", r6part = "Left Leg"},
-        [6] = {offset = Vector3.new(-0.5, -2, 0), r15part = "RightFoot", r6part = "Right Leg"} -- Using Foot for both R15/R6 Right leg for simplicity
+        [1] = {offset = Vector3.new(0, 0, 0), r15part = "Head", r6part = "Head"}, -- Removed individual offsets, now copying 1:1
+        [2] = {offset = Vector3.new(0, 0, 0), r15part = "UpperTorso", r6part = "Torso"},
+        [3] = {offset = Vector3.new(0, 0, 0), r15part = "LeftHand", r6part = "Left Arm"},
+        [4] = {offset = Vector3.new(0, 0, 0), r15part = "RightHand", r6part = "Right Arm"},
+        [5] = {offset = Vector3.new(0, 0, 0), r15part = "LeftFoot", r6part = "Left Leg"},
+        [6] = {offset = Vector3.new(0, 0, 0), r15part = "RightFoot", r6part = "Right Leg"}
     }
 
     oc = rs.Heartbeat:Connect(function()
         local ping = getPing()
-        local pred = enhancedPredPos(hr, ping) -- Keep pred for potential smoother movement, though may not be strictly needed
+        local pred = enhancedPredPos(hr, ping)
+        local baseOffsetCFrame = CFrame.new(pred + hr.CFrame.RightVector * -5) -- 5 studs to the right
 
         for i, hat in ipairs(acc) do
-            local bodyPartData = bodyPartsConfig[i % #bodyPartsConfig + 1] -- Cycle through body parts
+            local bodyPartData = bodyPartsConfig[i % #bodyPartsConfig + 1]
             if bodyPartData then
-                local targetPart = ot.Character:FindFirstChild(bodyPartData.r15part) or ot.Character:FindFirstChild(bodyPartData.r6part) -- Search on ot.Character
+                local targetPart = ot.Character:FindFirstChild(bodyPartData.r15part) or ot.Character:FindFirstChild(bodyPartData.r6part)
                 if targetPart then
-                    local targetCFrame = targetPart.CFrame * CFrame.new(bodyPartData.offset)
-                    local offWorldPos = targetCFrame.p - pred -- Offset from predicted root position instead of hr.CFrame
-                    hat.CFrame = CFrame.new(pred + offWorldPos, pred) -- Keep pred to position around predicted root
+                    local targetBodyPartCFrame = targetPart.CFrame
+                    local accessoryCFrame = baseOffsetCFrame * targetBodyPartCFrame:ToObjectSpace(hr.CFrame) -- Keep relative pos to target root
+                    hat.CFrame = accessoryCFrame
                 end
             end
         end
