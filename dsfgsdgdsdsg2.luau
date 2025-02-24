@@ -1,4 +1,3 @@
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
@@ -150,7 +149,7 @@ end
 local function respLoop()
 	while respActive do
 		if lp.Character and lp.Character:FindFirstChild("Humanoid") then
-			lp.Character.Humanoid.Health=0
+			lp.Character.Humanoid:ChangeState(15)
 		end
 		wait(1) getAcc()
 	end
