@@ -1437,7 +1437,7 @@ if lp.Character then
 	for i,v in pairs(lp.Character:GetDescendants()) do
 		if v:IsA("BasePart") and v.Name ~="HumanoidRootPart" then
 			rs.Heartbeat:Connect(function()
-				v.Velocity = Vector3.new(-30,0,0)
+				v.Velocity = Vector3.new(-3,0,0)
 			end)
 		end
 	end
