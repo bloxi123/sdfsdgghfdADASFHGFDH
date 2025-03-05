@@ -176,9 +176,6 @@ local function stopOrbit()
 	ot=nil; curMode=nil
 	enableColl()
 	for _,h in ipairs(acc) do if h and h.Parent then h.CFrame=CFrame.new(h.Position) end end
-	replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
-	wait(game.Players.RespawnTime + .1)
-	game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
 end
 
 local function computeOffset(hr, off)
