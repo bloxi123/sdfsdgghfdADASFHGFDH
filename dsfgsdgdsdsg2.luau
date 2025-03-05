@@ -164,14 +164,10 @@ local function enhancedPredPos(rp,ping)
 	local lead=math.min(math.max(ping*10,1),5)
 	return (vel.Magnitude>0) and (basePred+vel.Unit*lead) or basePred
 end
-
+replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
+wait(game.Players.RespawnTime + .1)
+game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
 local function respLoop()
-	while respActive do
-		if lp.Character and lp.Character:FindFirstChild("Humanoid") then
-			lp.Character.Humanoid:ChangeState(15)
-		end
-		wait(1) getAcc()
-	end
 end
 
 local function stopOrbit()
