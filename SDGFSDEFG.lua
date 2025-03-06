@@ -1044,7 +1044,9 @@ local reanimate=function()
 						insGet(newc,"BreakJoints")(newc)
 						local h=FindFirstChildOfClass(newc,"Humanoid")
 						if h then
-							insSet(h,"Health",0)
+							replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
+wait(game.Players.RespawnTime + .1)
+game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
 						end
 					elseif breakjointsmethod==2 then
 						local h=FindFirstChildOfClass(newc,"Humanoid")
