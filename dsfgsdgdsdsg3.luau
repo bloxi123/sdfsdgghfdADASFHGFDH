@@ -1329,6 +1329,7 @@ local function handleCmd(pl, msg)
 		elseif cmd=="stop" then
 			stopOrbit()
             elseif cmd=="resp" then
+			stopOrbit()
 			replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
 wait(game.Players.RespawnTime + .1)
 game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
