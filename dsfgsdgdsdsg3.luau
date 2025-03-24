@@ -88,20 +88,20 @@ local offset = r  -- Using script 1's r as default offset/range, can be adjusted
 local speed = sp  -- Using script 1's sp as default speed, can be adjusted
 
 local function disableColl()
-	for _,p in ipairs(workspace:GetDescendants()) do
-		if p:IsA("BasePart") then
-			p.CanCollide=false
-			p.CanTouch=false
-			p.CanQuery=false
-		end
-	end
-	workspace.DescendantAdded:Connect(function(p)
-		if p:IsA("BasePart") then
-			p.CanCollide=false
-			p.CanTouch=false
-			p.CanQuery=false
-		end
-	end)
+--	for _,p in ipairs(workspace:GetDescendants()) do
+		--if p:IsA("BasePart") then
+		--	p.CanCollide=false
+		--	p.CanTouch=false
+		--	p.CanQuery=false
+	--	end
+	--end
+	--workspace.DescendantAdded:Connect(function(p)
+	--	if p:IsA("BasePart") then
+		--	p.CanCollide=false
+		--	p.CanTouch=false
+		--	p.CanQuery=false
+		--end
+	 --end)
 end
 
 local function enableColl()
@@ -164,13 +164,17 @@ local function enhancedPredPos(rp,ping)
 	local lead=math.min(math.max(ping*10,1),5)
 	return (vel.Magnitude>0) and (basePred+vel.Unit*lead) or basePred
 end
+
+local function respLoop()
 replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
 wait(game.Players.RespawnTime + .1)
 game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
-local function respLoop()
 end
 
 local function stopOrbit()
+replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
+wait(game.Players.RespawnTime + .1)
+game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
 	if oc then oc:Disconnect() oc=nil end
 	respActive=false
 	ot=nil; curMode=nil
