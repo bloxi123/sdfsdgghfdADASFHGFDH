@@ -166,16 +166,10 @@ local function enhancedPredPos(rp,ping)
 end
 
 local function respLoop()
-replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
-wait(game.Players.RespawnTime + .1)
-game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
 end
 
 local function stopOrbit()
-replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
-wait(game.Players.RespawnTime + .1)
-game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
-	if oc then oc:Disconnect() oc=nil end
+if oc then oc:Disconnect() oc=nil end
 	respActive=false
 	ot=nil; curMode=nil
 	enableColl()
@@ -1334,6 +1328,11 @@ local function handleCmd(pl, msg)
 			end
 		elseif cmd=="stop" then
 			stopOrbit()
+            elseif cmd=="resp" then
+			replicatesignal(game.Players.LocalPlayer.ConnectDiedSignalBackend)
+wait(game.Players.RespawnTime + .1)
+game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(15)
+
 		elseif cmd=="speed" then
 			sp = tonumber(args[2]) or sp
             speed = sp -- Update script 2 style speed variable
